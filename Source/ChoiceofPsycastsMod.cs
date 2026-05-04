@@ -109,15 +109,15 @@ namespace ChoiceOfPsycasts
 		private void Choice()
 		{
 			List<FloatMenuOption> options = new List<FloatMenuOption>();
-			foreach ((AbilityDef, CachedTexture) Psycast in AbilityLibrary.Psycasts[Level])
+			foreach (var (ability, cachedTexture) in AbilityLibrary.Psycasts[Level])
 			{
-				if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == Psycast.Item1.defName))
+				if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == ability.defName))
 				{
-					FloatMenuOption option = new FloatMenuOption(Psycast.Item1.label, delegate
+					FloatMenuOption option = new FloatMenuOption(ability.label, delegate
 					{
-						Parent.abilities.GainAbility(Psycast.Item1);
+						Parent.abilities.GainAbility(ability);
 						Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(Level);
-					}, Psycast.Item2.Texture, Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), Psycast.Item1));
+					}, cachedTexture.Texture, Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), ability));
 					options.Add(option);
 				}
 			}
@@ -146,15 +146,15 @@ namespace ChoiceOfPsycasts
 			List<FloatMenuOption> options = new List<FloatMenuOption>();
 			for (int i = Range.low; i <= Range.high; i++)
 			{
-				foreach ((AbilityDef, CachedTexture) Psycast in AbilityLibrary.Psycasts[i])
+				foreach (var (ability, cachedTexture) in AbilityLibrary.Psycasts[i])
 				{
-					if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == Psycast.Item1.defName))
+					if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == ability.defName))
 					{
-						FloatMenuOption option = new FloatMenuOption(Psycast.Item1.label, delegate
+						FloatMenuOption option = new FloatMenuOption(ability.label, delegate
 						{
-							Parent.abilities.GainAbility(Psycast.Item1);
+							Parent.abilities.GainAbility(ability);
 							Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Remove(Range);
-						}, Psycast.Item2.Texture, Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), Psycast.Item1));
+						}, cachedTexture.Texture, Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), ability));
 						options.Add(option);
 					}
 				}
