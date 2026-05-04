@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using Verse;
 using RimWorld;
+using Multiplayer.API;
 
 namespace ChoiceOfPsycasts
 {
@@ -109,15 +110,14 @@ namespace ChoiceOfPsycasts
 		private void Choice()
 		{
 			List<FloatMenuOption> options = new List<FloatMenuOption>();
-			foreach ((AbilityDef, CachedTexture) Psycast in AbilityLibrary.Psycasts[Level])
+			foreach (var (ability, cachedTexture) in AbilityLibrary.Psycasts[Level])
 			{
-				if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == Psycast.Item1.defName))
+				if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == ability.defName))
 				{
-					FloatMenuOption option = new FloatMenuOption(Psycast.Item1.label, delegate
+					FloatMenuOption option = new FloatMenuOption(ability.label, delegate
 					{
-						Parent.abilities.GainAbility(Psycast.Item1);
-						Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(Level);
-					}, Psycast.Item2.Texture, Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), Psycast.Item1));
+						ChosenSingle(Parent, ability, Level);
+					}, cachedTexture.Texture, Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), ability));
 					options.Add(option);
 				}
 			}
@@ -141,20 +141,25 @@ namespace ChoiceOfPsycasts
 				Find.WindowStack.Add(menu);
 			}
 		}
+		[SyncMethod]
+		private static void ChosenSingle(Pawn pawn, AbilityDef ability, int level)
+		{
+			pawn.abilities.GainAbility(ability);
+			pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(level);
+		}
 		private void ChoiceCustom()
 		{
 			List<FloatMenuOption> options = new List<FloatMenuOption>();
 			for (int i = Range.low; i <= Range.high; i++)
 			{
-				foreach ((AbilityDef, CachedTexture) Psycast in AbilityLibrary.Psycasts[i])
+				foreach (var (ability, cachedTexture) in AbilityLibrary.Psycasts[i])
 				{
-					if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == Psycast.Item1.defName))
+					if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == ability.defName))
 					{
-						FloatMenuOption option = new FloatMenuOption(Psycast.Item1.label, delegate
+						FloatMenuOption option = new FloatMenuOption(ability.label, delegate
 						{
-							Parent.abilities.GainAbility(Psycast.Item1);
-							Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Remove(Range);
-						}, Psycast.Item2.Texture, Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), Psycast.Item1));
+							ChosenRange(Parent, ability, Range);
+						}, cachedTexture.Texture, Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), ability));
 						options.Add(option);
 					}
 				}
@@ -178,6 +183,12 @@ namespace ChoiceOfPsycasts
 				FloatMenu menu = new FloatMenu(options);
 				Find.WindowStack.Add(menu);
 			}
+		}
+		[SyncMethod]
+		private static void ChosenRange(Pawn pawn, AbilityDef ability, LevelRange range)
+		{
+			pawn.abilities.GainAbility(ability);
+			pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Remove(range);
 		}
 	}
 	[StaticConstructorOnStartup]
@@ -234,6 +245,11 @@ namespace ChoiceOfPsycasts
 			{
 				Settings.PsycastOptions = 1;
 				Settings.PsycastPicks = 0;
+			}
+
+			if (MP.enabled)
+			{
+				MP.RegisterAll();
 			}
 		}
 
